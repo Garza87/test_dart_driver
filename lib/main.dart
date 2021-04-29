@@ -50,7 +50,6 @@ class _MyAppState extends State<MyApp> {
       portCtl = new TextEditingController();
       portCtl.text = '';
       printerManager = new PrinterNetworkManager();
-      node = new FocusScopeNode();
       first = false;
     }
 
@@ -74,7 +73,6 @@ class _MyAppState extends State<MyApp> {
               fieldName: "Numero di porta",
               titleCorrection: 99,
               blackTitle: true,
-              node: node,
             ),
             SizedBox(height: 20),
             Row(
