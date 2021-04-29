@@ -12,12 +12,13 @@ class Epson {
     int checksum = 0;
     for(int i = 0; i < command.length; i++) checksum += command.codeUnitAt(i);
     checksum = checksum % 100;
-    command = "2$command${(checksum < 10) ? "0$checksum" : checksum}3";
+    command = String.fromCharCode(02) + "$command${(checksum < 10) ? "0$checksum" : checksum}" + String.fromCharCode(03);
+    //print(command);
     List<int> bytes = utf8.encode(command);
     try {
-      await Socket.connect(ip, port, timeout: timeout).then((Socket socket) {
+      await Socket.connect(ip, port, timeout: timeout).then((Socket socket) async {
         socket.add(bytes);
-        var returnValue = socket.done;
+        var returnValue = await socket.flush();
         print('Risposta ricevuta: $returnValue');
         PlatformAlertDialog(
             title: "Risposta ottenuta:",

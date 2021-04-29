@@ -1,6 +1,7 @@
 import 'package:driver/dialog/driver_textfield.dart';
 import 'package:driver/dialog/section_wrapper.dart';
 import 'package:driver/printer_manager/manager.dart';
+import 'package:driver/test_fiscal/custom.dart';
 import 'package:driver/test_fiscal/epson.dart';
 import 'package:driver/ticket/ticket.dart';
 import 'package:driver/utils/barcode.dart';
@@ -66,8 +67,6 @@ class _MyAppState extends State<MyApp> {
               fieldName: "Indirizzo IP",
               titleCorrection: 99,
               blackTitle: true,
-              altFunction: goToPort,
-              altFunctionOnEditingCompleted: true,
             ),
             DriverTextField(
               textCtl: portCtl,
@@ -75,8 +74,6 @@ class _MyAppState extends State<MyApp> {
               fieldName: "Numero di porta",
               titleCorrection: 99,
               blackTitle: true,
-              altFunction: end,
-              altFunctionOnEditingCompleted: true,
               node: node,
             ),
             SizedBox(height: 20),
@@ -115,6 +112,22 @@ class _MyAppState extends State<MyApp> {
                     ),
                   ),
                 ),
+                SizedBox(width: 20),
+                SizedBox(
+                  height: 75,
+                  width: 120,
+                  child: ElevatedButton(
+                    onPressed: () => statusRTCustom(context),
+                    child: Center(
+                      child: SizedBox(
+                        child: Text(
+                          "STATO RT\nCUSTOM",
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ],
@@ -122,13 +135,6 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
-
-  void goToPort(BuildContext context) {
-    //FocusScope.of(context).unfocus();
-    FocusScope.of(context).requestFocus(node);
-  }
-
-  void end(BuildContext context) => FocusScope.of(context).unfocus();
 
   Future<int> getPortNumber(TextEditingController portCtl, BuildContext context) async {
     String port = portCtl.text.trim();
@@ -187,6 +193,41 @@ class _MyAppState extends State<MyApp> {
       print(e);
       await PlatformAlertDialog(
         title: "Errore nel metodo statusEpson",
+        content: e.toString(),
+        defaultActionText: "Ok",
+      ).show(context);
+    }
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  Future<void> statusRTCustom(BuildContext context) async {
+    try {
+      if (isLoading) return null;
+      setState(() {
+        isLoading = true;
+      });
+      int portNumber = await getPortNumber(portCtl, context);
+      if (portNumber < 0) {
+        setState(() {
+          isLoading = false;
+        });
+        return null;
+      }
+      String ipAdd = ipCtl.text.trim();
+      await setManager(portNumber, ipAdd, context);
+      Custom custom = new Custom();
+      await custom.checkRTStatus(
+        printerManager.getIP(),
+        printerManager.getPort(),
+        printerManager.getTimeout(),
+        context,
+      );
+    } catch (e) {
+      print(e);
+      await PlatformAlertDialog(
+        title: "Errore nel metodo statusRTCustom",
         content: e.toString(),
         defaultActionText: "Ok",
       ).show(context);
